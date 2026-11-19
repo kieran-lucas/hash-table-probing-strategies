@@ -8,6 +8,7 @@
   const samples = {
     collision: {size:17,keys:[17,34,51,68,85,102,119,136]},
     mixed: {size:11,keys:[17,3,14,25,39,5,22,46]},
+    counterexample: {size:17,keys:[1,4,18,0,6,9,12,15]},
     quadratic: {size:11,keys:[0,11,22,33,44,55,66]},
     dense: {size:11,keys:[0,11,22,33,44,55,66,77,88,99]},
     spread: {size:11,keys:[0,1,2,3,4,5]}
