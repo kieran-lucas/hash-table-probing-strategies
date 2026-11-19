@@ -57,15 +57,15 @@
     boardNodes[method]={root,counter,desc,grid,detail,metrics};
   }
   function explain(frame,method,p) {
-    if(frame.type==="initial")return "Bắt đầu từ bảng rỗng. Khóa đầu tiên sẽ được chèn ở vị trí băm chính.";
-    if(frame.type==="done")return "Đã chèn xong dãy khóa. Các ô đang hiển thị trạng thái cuối cùng.";
-    if(p.settled)return "Khóa "+frame.key+" đã hoàn tất; giữ trạng thái này cho đến lượt khóa tiếp theo.";
+    if(frame.type==="initial")return "Bảng đang trống. Lần chèn đầu tiên bắt đầu từ vị trí băm chính.";
+    if(frame.type==="done")return "Bảng sau khi xử lý hết dãy khóa.";
+    if(p.settled)return "Đã xử lý khóa "+frame.key+". Bảng giữ nguyên cho tới khóa kế tiếp.";
     if(p.outcome==="collision")
-      return "Khóa "+frame.key+" gặp "+p.slots[p.index]+" tại ô "+p.index+". Thuật toán tiếp tục tới ô kế tiếp trong dãy.";
+      return "Ô "+p.index+" đã chứa khóa "+p.slots[p.index]+". Tiếp tục thử vị trí kế tiếp.";
     if(p.outcome==="insert")
-      return "Tìm được ô "+p.index+" còn trống và đặt khóa "+frame.key+" vào đó.";
+      return "Ô "+p.index+" còn trống. Chèn khóa "+frame.key+" tại đây.";
     if(p.outcome==="fail")
-      return "Dãy vị trí của khóa "+frame.key+" đã quay vòng. Lượt chèn kết thúc với kết quả thất bại.";
+      return "Đã thử hết các vị trí trong dãy của khóa "+frame.key+". Không tìm được ô trống.";
     return "Đang xử lý khóa "+frame.key+".";
   }
   function renderBoard(method,frame) {
@@ -162,8 +162,8 @@
     }
     const fails=E.METHODS.filter(m=>state.runs[m].failed>0);
     $("metrics-note").textContent=fails.length?
-      "Lưu ý: "+fails.map(m=>short[m]).join(", ")+" không chèn được tất cả khóa. Probe count bao gồm cả lượt kiểm tra trước thất bại; không dùng riêng tổng probe để kết luận phương pháp thất bại là nhanh hơn.":
-      "Tất cả phương pháp đều chèn hết dãy. Một probe là một ô được kiểm tra; một collision là một ô đang chứa khóa khác. Ít probe hơn không đồng nghĩa chắc chắn chạy nhanh hơn trên CPU.";
+      "Phương pháp chưa chèn hết khóa: "+fails.map(m=>short[m]).join(", ")+". Tổng probe đã tính cả những lần kiểm tra trước khi chèn thất bại.":
+      "Cả ba phương pháp đã chèn đủ dãy khóa. Tổng probe tính cả lần kiểm tra ô trống khi chèn thành công.";
   }
   function renderSearch(){
     const raw=$("search-key").value.trim(),key=Number(raw);
@@ -178,7 +178,7 @@
       const row=el("div","search-result");
       const title=el("strong","",short[method]);
       const status=result.found?"Tìm thấy ở ô "+result.index:
-        result.reason==="empty"?"Không thấy (gặp ô trống)":"Không thấy (hết dãy thăm dò)";
+        result.reason==="empty"?"Không tìm thấy; dừng tại ô trống":"Không tìm thấy; đã thử hết dãy thăm dò";
       const detail=el("p","",status+" · "+result.path.length+
         " probe · Dãy: "+result.path.join(" → "));
       row.append(title,detail);
