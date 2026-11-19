@@ -1,4 +1,4 @@
-# Chọn chiến lược thăm dò trong Hash Table
+# Linear, Quadratic và Double Hashing
 
 Khi hai khóa cùng băm vào một ô, ta sẽ đưa khóa đến đâu? **Linear Probing** thử các ô kế tiếp, **Quadratic Probing** trải rộng các vị trí theo độ dịch chuyển bình phương, còn **Double Hashing** dùng một hàm băm phụ để xác định bước nhảy. Ba cách tiếp cận này cùng giải quyết va chạm, nhưng khác nhau ở clustering, số lần thăm dò và đặc tính truy cập bộ nhớ.
 
