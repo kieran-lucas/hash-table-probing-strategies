@@ -22,7 +22,7 @@
 <main class="page">
   <header class="intro">
     <h1>Linear, Quadratic và Double Hashing</h1>
-    <p class="lead">Với bảng băm dùng <em>open addressing</em>, một lần va chạm có thể kéo theo nhiều lần kiểm tra ô khác. Linear Probing cứ đi sang ô kế tiếp; Quadratic Probing thử những vị trí cách dần theo bình phương; Double Hashing dùng thêm một hàm băm để tính bước nhảy. Cách nào cũng tìm chỗ cho khóa mới, nhưng số ô phải kiểm tra và cách truy cập bộ nhớ có thể khác nhau đáng kể. Đó là hai điều cần xét khi chọn phương pháp.</p>
+    <p class="lead">Với bảng băm dùng <em>open addressing</em>, một lần va chạm có thể kéo theo nhiều lần kiểm tra ô khác. Linear Probing cứ đi sang ô kế tiếp; Quadratic Probing thử những vị trí cách dần theo bình phương; Double Hashing dùng thêm một hàm băm để tính bước nhảy. Cả ba đều xử lý va chạm bằng cách thử những ô khác trong bảng, nhưng số lượt kiểm tra và cách truy cập bộ nhớ có thể khác nhau đáng kể. Đó là hai điều cần xét khi chọn phương pháp.</p>
   </header>
 
   <section id="methods" aria-labelledby="methods-title">
@@ -232,7 +232,7 @@ public static int probe(Method method, int key, int attempt, int m) {
   <section id="conclusion" aria-labelledby="conclusion-title">
     <div class="section-label">05 — Lựa chọn</div>
     <h2 id="conclusion-title">Khi nào nên dùng phương pháp nào?</h2>
-    <p>Không cần mặc định chọn cách có ít probe nhất trong một ví dụ. Tùy số phần tử, phân phối khóa và cách truy cập bộ nhớ, mỗi phương pháp sẽ có lợi thế ở một điều kiện khác nhau.</p>
+    <p>Một phép thử ít va chạm có thể cho kết quả rất khác một bảng gần đầy. Vì thế, cách chọn phương pháp phải dựa vào phân phối khóa, hệ số tải và chi phí đọc bộ nhớ của chương trình đang xây dựng.</p>
     <h3>Linear Probing</h3>
     <p>Với bảng có hệ số tải thấp hoặc vừa phải và hàm băm phân phối khá đều, Linear thường là lựa chọn đầu tiên đáng thử. Thuật toán đơn giản, đọc các ô liền nhau và tận dụng cache tốt. Khi bảng đầy dần hoặc nhiều khóa băm vào cùng một vùng, những cụm dài trở thành điểm yếu; vì thế cần chú ý ngưỡng mở rộng bảng.</p>
     <h3>Quadratic Probing</h3>
