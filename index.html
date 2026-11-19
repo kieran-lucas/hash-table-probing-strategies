@@ -72,7 +72,6 @@
       </div>
     </div>
   <p>Tám khóa trên đều băm về ô 0. Linear sẽ lấp các ô kế tiếp; Quadratic thử dãy \(0\to1\to4\to9\to16\to\cdots\); còn Double Hashing có thể thử những dãy khác nhau cho từng khóa. Các bước chèn cụ thể được giữ lại trong phần mô phỏng.</p>
-  <h3>Cài đặt Java</h3>
   <p>Vòng lặp chèn vẫn làm một việc: tính vị trí, kiểm tra ô đó và thử ô tiếp theo nếu xảy ra va chạm. Chỉ cần thay đổi cách tính vị trí trong <code>probe()</code>. <a href="src/ProbingStrategies.java">File Java đầy đủ</a> có cả thao tác chèn và tìm kiếm.</p>
   <div class="code-heading"><h3>Hàm thăm dò trong Java</h3><button type="button" id="copy-code" class="copy">Sao chép</button></div>
     <pre class="code" tabindex="0"><code id="java-code">public enum Method { LINEAR, QUADRATIC, DOUBLE }
@@ -101,7 +100,7 @@ public static int probe(Method method, int key, int attempt, int m) {
   <p>Với tám khóa cùng băm về ô 0, Linear Probing cần \(1+2+\cdots+8=36\) lượt thăm dò. Các khóa được xếp vào một đoạn liên tiếp từ ô 0 đến ô 7. Nếu một khóa mới băm vào giữa đoạn này, nó phải kiểm tra đến hết đoạn mới gặp ô trống. Đoạn càng dài càng dễ thu hút thêm khóa — đó là <em>primary clustering</em>.</p>
   <p>Quadratic Probing đưa khóa vào những ô rải rác hơn, nhưng cũng cần 36 lượt thăm dò. Tất cả khóa có cùng \(h(k)=0\) đều phải kiểm tra chung dãy \(0,1,4,9,16,8,2,15,\ldots\). Hiện tượng các khóa có cùng vị trí băm ban đầu phải dùng cùng một dãy được gọi là <em>secondary clustering</em>.</p>
   <p>Double Hashing giảm sự trùng dãy bằng \(h_2(k)\). Trong ví dụ này, \(h_2(34)=1\) nên khóa <code>34</code> thử ô 1 sau ô 0; \(h_2(51)=5\) nên khóa <code>51</code> thử ô 5. Tổng cộng tám khóa chỉ cần <strong>15 probe</strong>. Hai khóa trùng cả \(h_1\) và \(h_2\) vẫn có thể phải đi cùng dãy.</p>
-  <h3>Trường hợp bảng còn trống mà vẫn chèn thất bại</h3>
+  <h3>Khi bảng vẫn còn ô trống</h3>
   <p>Linear có thể thử đủ \(M\) ô. Double Hashing cũng vậy nếu \(\gcd(h_2(k),M)=1\). Riêng Quadratic dạng \(i^2\), với \(M\) nguyên tố lẻ, chỉ thử được \((M+1)/2\) ô khác nhau tính từ một vị trí ban đầu. Ví dụ trên bảng 11 ô, khóa băm về 0 chỉ đi qua \(0\to1\to4\to9\to5\to3\). Nếu cả sáu ô ấy đã có khóa, lần chèn tiếp theo thất bại dù còn năm ô trống.</p>
   <p>Với biến thể \(i^2\) và kích thước bảng nguyên tố, giữ hệ số tải dưới 50% sẽ bảo đảm mỗi lần chèn tìm được ô trống. Phần mô phỏng dùng các kích thước nguyên tố từ 11 đến 31 và \(h_2(k)=7-(k\bmod7)\); mọi bước nhảy của Double Hashing khi đó đều nguyên tố cùng nhau với \(M\).</p>
   <h3>Ảnh hưởng của hệ số tải</h3>
