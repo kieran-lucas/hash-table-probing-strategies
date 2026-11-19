@@ -221,7 +221,7 @@ public static int probe(Method method, int key, int attempt, int m) {
   <section id="tradeoffs" aria-labelledby="tradeoffs-title">
     <div class="section-label">06 — Đánh đổi và lựa chọn</div>
     <h2 id="tradeoffs-title">So sánh hiệu năng và trade-off</h2>
-    <p>Trong ví dụ tám khóa, Double Hashing kiểm tra 15 ô, so với 36 ô của Linear và Quadratic. Nếu chỉ đếm số probe, Double Hashing có lợi thế rõ ràng. Tuy nhiên, các ô liên tiếp của Linear thường nằm gần nhau trong bộ nhớ; CPU có thể nạp nhiều ô cùng lúc vào cache. Với Double Hashing, các lần thăm dò thường cách xa nhau hơn, nên mỗi probe có thể tốn nhiều thời gian truy cập hơn.</p>
+    <p>Trong ví dụ tám khóa, Double Hashing kiểm tra 15 ô, còn Linear và Quadratic đều cần 36 lần kiểm tra. Linear thường đọc các phần tử nằm cạnh nhau trong mảng, nên CPU có thể tận dụng dữ liệu đã nạp vào cache. Double Hashing lại thường truy cập những vị trí xa hơn. Vì thế, ngoài số probe, cần xét cả chi phí của mỗi lần đọc bộ nhớ khi so sánh thời gian chạy.</p>
     <h3>Linear Probing và cache locality</h3>
     <p>Linear Probing phù hợp với bảng có hệ số tải thấp hoặc vừa phải và hàm băm phân phối tương đối đều. Nó chỉ cần tăng chỉ số để tìm ô kế tiếp, đồng thời tận dụng tốt các vùng nhớ liên tiếp. Khi nhiều khóa băm vào cùng một vùng, các cụm ô đã chiếm dài ra và số lần kiểm tra tăng nhanh.</p>
     <h3>Quadratic Probing và primary clustering</h3>
