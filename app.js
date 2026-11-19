@@ -70,7 +70,9 @@
   }
   function renderBoard(method,frame) {
     const n=boardNodes[method], p=frame.panels[method], size=p.slots.length;
-    n.grid.style.gridTemplateColumns="repeat("+size+", minmax(29px, 1fr))";
+    const maxChars=Math.max(1,...p.slots.filter(v=>v!==null).map(v=>String(v).length));
+    const minCell=Math.max(29,12+maxChars*8);
+    n.grid.style.gridTemplateColumns="repeat("+size+", minmax("+minCell+"px, 1fr))";
     const fragment=document.createDocumentFragment();
     p.slots.forEach((value,index)=>{
       const occupied=value!==null;
