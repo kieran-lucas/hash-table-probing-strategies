@@ -1,28 +1,26 @@
 # Linear, Quadratic và Double Hashing
 
-Khi hai khóa cùng băm vào một ô, ta sẽ đưa khóa đến đâu? **Linear Probing** thử các ô kế tiếp, **Quadratic Probing** trải rộng các vị trí theo độ dịch chuyển bình phương, còn **Double Hashing** dùng một hàm băm phụ để xác định bước nhảy. Ba cách tiếp cận này cùng giải quyết va chạm, nhưng khác nhau ở clustering, số lần thăm dò và đặc tính truy cập bộ nhớ.
-
-Repository là một **bài tech blog tương tác bằng tiếng Việt**, xây dựng theo phong cách tối giản của dự án [quicksort-pivot-selection](https://github.com/kieran-lucas/quicksort-pivot-selection). Bài viết nối tiếp từ ví dụ va chạm, phân tích công thức, mô phỏng từng bước và cuối cùng trả lời câu hỏi: *Khi nào nên chọn cách nào, và phải đánh đổi những gì?*
+Khi hai khóa cùng băm về một ô, bảng cần tìm chỗ lưu cho khóa đến sau. Linear Probing thử lần lượt các ô tiếp theo; Quadratic Probing tính vị trí từ bình phương số lần thăm dò; còn Double Hashing dùng một hàm băm thứ hai để xác định bước nhảy. Bài viết so sánh ba cách xử lý va chạm này bằng mã Java, mô phỏng từng bước và số lần kiểm tra ô.
 
 **[Đọc bài viết và chạy mô phỏng](https://kieran-lucas.github.io/hash-table-probing-strategies/)**
 
-## Thử ngay một ví dụ
+## Ví dụ
 
-Chèn lần lượt `17, 34, 51, 68, 85, 102, 119, 136` vào bảng có `M = 17`. Tất cả khóa cùng có vị trí băm ban đầu là 0. Nếu chạy cùng bộ dữ liệu trên cả ba chiến lược, số lượt thăm dò sẽ là:
+Dãy mặc định gồm tám khóa `17, 34, 51, 68, 85, 102, 119, 136` được chèn vào bảng có `M = 17`. Cả tám khóa đều băm về ô 0. Kết quả:
 
-| Chiến lược | Tổng số probe | Chèn thành công |
+| Phương pháp | Số lần thăm dò | Khóa chèn thành công |
 | --- | ---: | ---: |
 | Linear Probing | 36 | 8 |
 | Quadratic Probing (`i²`) | 36 | 8 |
 | Double Hashing | 15 | 8 |
 
-Đáng chú ý, Quadratic trải các phần tử ra các ô khác nhau nhưng vẫn cần từng ấy lượt thăm dò, vì mọi khóa cùng băm về 0 đều đi theo chung một dãy. Double Hashing tách dãy thăm dò nhờ bước nhảy phụ thuộc vào khóa. Đây là ví dụ có chủ đích để nhìn rõ sự khác biệt về cơ chế; bạn có thể chuyển sang các bộ dữ liệu hỗn hợp, phân phối đều hoặc tình huống Quadratic gặp giới hạn bao phủ.
+Linear lấp các ô liên tiếp từ 0 đến 7. Quadratic phân tán khóa sang nhiều ô khác nhau nhưng vẫn thử lại cùng một dãy vì các khóa có cùng vị trí băm ban đầu. Với Double Hashing, bước nhảy thay đổi theo khóa nên nhiều lần va chạm được tránh ngay từ lượt thử thứ hai.
 
-Animation hiển thị ba bảng song song, cho phép phát/tạm dừng, tua, đi từng bước và điều chỉnh tốc độ. Bên dưới là bảng thống kê số lượt thăm dò, số va chạm, thao tác chèn và mục thử tìm kiếm. Thanh hệ số tải giúp khảo sát các công thức kỳ vọng Linear Probing của Sedgewick–Wayne.
+Mô phỏng cho phép phát, tạm dừng, tua theo từng bước và thay đổi dữ liệu. Bảng thống kê hiển thị số probe, số va chạm và các lần chèn thất bại. Bạn cũng có thể tìm kiếm một khóa hoặc thay đổi hệ số tải để khảo sát công thức kỳ vọng của Linear Probing.
 
-## Chạy cục bộ và kiểm thử
+## Chạy và kiểm thử
 
-Website dùng HTML, CSS và JavaScript thuần. Mở `index.html` trực tiếp hoặc chạy một static server bất kỳ.
+Website sử dụng HTML, CSS và JavaScript thuần. Mở `index.html` trong trình duyệt hoặc dùng một máy chủ tĩnh.
 
 ```bash
 node --test tests/probing.test.cjs
@@ -30,13 +28,13 @@ javac src/ProbingStrategies.java
 java -cp src ProbingStrategies
 ```
 
-Lõi tính toán nằm ở `engine.js`; `app.js` điều khiển giao diện và animation; `src/ProbingStrategies.java` cài đặt ba chiến lược tương ứng. Workflow GitHub Actions chạy kiểm thử Node.js và biên dịch/chạy Java ở mỗi lần push.
+`engine.js` xử lý thuật toán và lưu các bước thăm dò, `app.js` điều khiển giao diện, còn `src/ProbingStrategies.java` cung cấp phần cài đặt Java. GitHub Actions chạy kiểm thử Node.js và kiểm tra mã Java sau mỗi lần push.
 
-## Quy ước thực nghiệm
+## Quy ước mô phỏng
 
-Bảng mô phỏng sử dụng kích thước nguyên tố `M ∈ {11, 13, 17, 19, 23, 29, 31}`, với `h₁(k) = k mod M` và `h₂(k) = 7 − (k mod 7)`. Dãy vị trí lần lượt tuân theo `h₁+i`, `h₁+i²`, hoặc `h₁+i·h₂`, rồi lấy modulo `M`. Công thức Quadratic đang dùng là biến thể `i²`; các biến thể khác có thể có tính chất bao phủ khác.
+Bảng có kích thước nguyên tố `M ∈ {11, 13, 17, 19, 23, 29, 31}`. Các hàm băm được chọn là `h₁(k) = k mod M` và `h₂(k) = 7 − (k mod 7)`. Tùy phương pháp, độ dịch chuyển ở lượt thứ `i` là `i`, `i²` hoặc `i·h₂(k)`.
 
-Mỗi khóa là một số nguyên phân biệt. Một **probe** là một ô đã được kiểm tra; một **collision** xảy ra khi ô đó chứa khóa khác. Mô phỏng giữ nguyên kích thước bảng khi chèn để nhìn rõ ảnh hưởng của lựa chọn dãy thăm dò. Các con số so sánh ở đây là số lượt kiểm tra ô; đánh giá thời gian CPU và cache locality là một phép đo khác, phụ thuộc cả phần cứng và cách cài đặt.
+Một **probe** được tính mỗi khi kiểm tra một ô; **collision** xảy ra khi ô đó đã có khóa khác. Mô phỏng dùng các khóa nguyên phân biệt, không thay đổi kích thước bảng trong lúc chèn. Các số liệu là số lần kiểm tra ô, còn thời gian chạy thực tế phụ thuộc thêm vào chi phí tính toán và truy cập bộ nhớ.
 
 ## Tài liệu tham khảo
 
