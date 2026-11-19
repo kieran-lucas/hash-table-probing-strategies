@@ -105,3 +105,19 @@ test("Default eight-key experiment matches the article and lengthens the animati
   assert.match(html,/<option value="17" selected>/);
   assert.match(app,/collision: \{size:17,keys:\[17,34,51,68,85,102,119,136\]\}/);
 });
+
+test("Balanced sample: Linear and Quadratic can use fewer probes than Double", () => {
+  const keys=[1,4,18,0,6,9,12,15];
+  const runs=E.compare(keys,17);
+  assert.deepEqual([runs.linear.probes,runs.quadratic.probes,runs.double.probes],[9,9,10]);
+  assert.deepEqual(runs.linear.operations[2].path,[1,2]);
+  assert.deepEqual(runs.double.operations[2].path,[1,4,7]);
+  assert.equal(runs.double.failed,0);
+  const fs=require("node:fs"),path=require("node:path");
+  const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
+  const app=fs.readFileSync(path.join(__dirname,"..","app.js"),"utf8");
+  const sections=[...html.matchAll(/<section id="([^"]+)"/g)].map(x=>x[1]);
+  assert.deepEqual(sections,["methods","analysis","lab","tradeoffs","conclusion"]);
+  assert.match(html,/<option value="counterexample">Linear ít probe hơn Double<\/option>/);
+  assert.match(app,/counterexample: \{size:17,keys:\[1,4,18,0,6,9,12,15\]\}/);
+});
