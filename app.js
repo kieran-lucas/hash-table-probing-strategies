@@ -6,7 +6,7 @@
   const names = {linear:"Linear Probing",quadratic:"Quadratic Probing",double:"Double Hashing"};
   const short = {linear:"Linear",quadratic:"Quadratic",double:"Double"};
   const samples = {
-    collision: {size:11,keys:[11,22,33,44]},
+    collision: {size:17,keys:[17,34,51,68,85,102,119,136]},
     mixed: {size:11,keys:[17,3,14,25,39,5,22,46]},
     quadratic: {size:11,keys:[0,11,22,33,44,55,66]},
     dense: {size:11,keys:[0,11,22,33,44,55,66,77,88,99]},
@@ -57,15 +57,15 @@
     boardNodes[method]={root,counter,desc,grid,detail,metrics};
   }
   function explain(frame,method,p) {
-    if(frame.type==="initial")return "Bảng trống, chưa xử lý khóa.";
-    if(frame.type==="done")return "Đã xử lý xong toàn bộ dãy khóa.";
-    if(p.settled)return "Đã xử lý khóa "+frame.key+"; chờ hai phương pháp còn lại.";
+    if(frame.type==="initial")return "Bắt đầu từ bảng rỗng. Khóa đầu tiên sẽ được chèn ở vị trí băm chính.";
+    if(frame.type==="done")return "Đã chèn xong dãy khóa. Các ô đang hiển thị trạng thái cuối cùng.";
+    if(p.settled)return "Khóa "+frame.key+" đã hoàn tất; giữ trạng thái này cho đến lượt khóa tiếp theo.";
     if(p.outcome==="collision")
-      return "Thử ô "+p.index+": đang chứa khóa "+p.slots[p.index]+". Tiếp tục thăm dò.";
+      return "Khóa "+frame.key+" gặp "+p.slots[p.index]+" tại ô "+p.index+". Thuật toán tiếp tục tới ô kế tiếp trong dãy.";
     if(p.outcome==="insert")
-      return "Ô "+p.index+" trống: chèn khóa "+frame.key+" thành công.";
+      return "Tìm được ô "+p.index+" còn trống và đặt khóa "+frame.key+" vào đó.";
     if(p.outcome==="fail")
-      return "Chèn khóa "+frame.key+" thất bại: dãy thăm dò không còn ô mới để thử.";
+      return "Dãy vị trí của khóa "+frame.key+" đã quay vòng. Lượt chèn kết thúc với kết quả thất bại.";
     return "Đang xử lý khóa "+frame.key+".";
   }
   function renderBoard(method,frame) {
