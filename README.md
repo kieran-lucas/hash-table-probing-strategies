@@ -1,28 +1,32 @@
 # Linear, Quadratic và Double Hashing
 
-Ba cách thăm dò phổ biến trong bảng băm có những điểm mạnh khác nhau. Linear Probing đọc các ô liên tiếp, dễ cài đặt và tận dụng cache tốt. Quadratic Probing giảm các cụm ô liền nhau. Double Hashing dùng thêm một hàm băm để các khóa cùng vị trí ban đầu có thể dò theo những dãy khác nhau.
+Một lần va chạm trong bảng băm có thể dẫn đến nhiều lần kiểm tra ô trước khi tìm được chỗ trống. Với **Linear Probing**, ta thử các ô liền nhau. **Quadratic Probing** thay đổi độ dịch chuyển theo bình phương số lần thăm dò, còn **Double Hashing** tính bước nhảy bằng một hàm băm thứ hai. Cách đi qua các ô quyết định số probe, hiện tượng clustering và cả khả năng tận dụng cache.
 
-Bài viết phân tích khi nào nên dùng mỗi cách, giải thích các yếu tố gây clustering và so sánh kết quả trên cùng dữ liệu đầu vào.
+Bài viết dùng các ví dụ có thể chạy từng bước để trả lời câu hỏi: **khi nào nên chọn từng phương pháp và phải đánh đổi điều gì?**
 
 **[Đọc bài viết và chạy mô phỏng](https://kieran-lucas.github.io/hash-table-probing-strategies/)**
 
-## Nội dung
+## Xem hai ví dụ
 
-Bài viết có năm phần: cơ chế thăm dò, clustering và hệ số tải, mô phỏng chèn khóa, đánh đổi về số probe và truy cập bộ nhớ, cuối cùng là cách chọn phương pháp.
+Chèn dãy `17, 34, 51, 68, 85, 102, 119, 136` vào bảng có `M = 17` và `h(k) = k mod 17`. Cả tám khóa đều băm về ô 0. Linear và Quadratic phải thử lại nhiều ô đã có phần tử, trong khi Double Hashing cho các khóa đi theo những dãy khác nhau.
 
-Mô phỏng cho phép phát từng bước, thay đổi khóa, xem số probe/collision và thử tìm kiếm. Dữ liệu mặc định là tám khóa cùng băm về ô 0 trong bảng 17 ô:
-
-| Phương pháp | Probe | Khóa chèn được |
+| Phương pháp | Tổng probe | Khóa chèn thành công |
 | --- | ---: | ---: |
 | Linear Probing | 36 | 8 |
 | Quadratic Probing (`i²`) | 36 | 8 |
 | Double Hashing | 15 | 8 |
 
-Có thêm mẫu `1, 4, 18, 0, 6, 9, 12, 15` (cũng trên bảng 17 ô). Trong mẫu này, Linear và Quadratic dùng 9 probe, Double dùng 10. Hai phép thử cho thấy kết quả phụ thuộc đáng kể vào cách các khóa phân bố trong bảng.
+Thử tiếp bộ dữ liệu `1, 4, 18, 0, 6, 9, 12, 15`, cũng trên bảng 17 ô. Lúc chèn khóa `18`, Linear thử ô 1 đã có khóa rồi tới ô 2 còn trống. Double Hashing nhảy từ ô 1 sang ô 4 đang bận, sau đó mới tới ô 7. Tổng cộng Linear và Quadratic cần **9 probe**, còn Double cần **10**. Lợi thế về số probe phụ thuộc vào chính dữ liệu được chèn.
 
-## Chạy và kiểm thử
+Mô phỏng có Play/Pause, tiến/lùi và thanh tua. Các bảng chạy đồng bộ theo khóa, hiển thị vị trí đang thử, va chạm và trạng thái sau khi chèn. Bên dưới là thống kê số probe, số collision, lượt chèn thành công/thất bại và phần thử tìm kiếm.
 
-Website dùng HTML, CSS và JavaScript thuần. Mở `index.html` trong trình duyệt hoặc sử dụng máy chủ tĩnh.
+## Đọc theo thứ tự
+
+Bài gồm năm phần: cơ chế thăm dò và mã Java; clustering cùng hệ số tải; mô phỏng; đánh đổi giữa số probe và chi phí bộ nhớ; cuối cùng là điều kiện nên chọn Linear, Quadratic hay Double Hashing.
+
+## Chạy tại máy
+
+Website sử dụng HTML, CSS và JavaScript thuần. Có thể mở trực tiếp `index.html` trong trình duyệt.
 
 ```bash
 node --test tests/probing.test.cjs
@@ -30,15 +34,15 @@ javac src/ProbingStrategies.java
 java -cp src ProbingStrategies
 ```
 
-`engine.js` cài đặt các dãy thăm dò và ghi lại trạng thái bảng, `app.js` điều khiển mô phỏng, `src/ProbingStrategies.java` là bản Java. GitHub Actions kiểm thử lõi JavaScript và Java sau mỗi lần push.
+Lõi mô phỏng nằm trong `engine.js`, giao diện và animation trong `app.js`, còn `src/ProbingStrategies.java` là bản cài đặt Java. Các bài kiểm thử Node.js và Java chạy tự động qua GitHub Actions.
 
-## Quy ước
+## Quy ước phép thử
 
-Bảng sử dụng kích thước nguyên tố `M ∈ {11, 13, 17, 19, 23, 29, 31}`. Hàm băm chính là `h₁(k) = k mod M`; bước nhảy của Double Hashing là `h₂(k) = 7 − (k mod 7)`. Quadratic dùng biến thể `i²`, nên chỉ thăm dò được một phần các ô trong bảng có kích thước nguyên tố lẻ.
+Bảng có kích thước nguyên tố `M ∈ {11, 13, 17, 19, 23, 29, 31}`. Hàm băm chính là `h₁(k) = k mod M`; Double Hashing dùng `h₂(k) = 7 − (k mod 7)`. Quadratic sử dụng công thức `h₁(k) + i²` lấy modulo `M`, nên có thể chỉ thử được một phần các ô của bảng.
 
-Một **probe** là một lần kiểm tra ô; một **collision** xảy ra nếu ô đã chứa khóa khác. Đầu vào gồm các khóa nguyên phân biệt. Bảng giữ nguyên kích thước trong suốt lần chạy. Số probe cho biết thuật toán kiểm tra bao nhiêu ô, còn tốc độ thực thi phụ thuộc cả cách truy cập bộ nhớ và phần cứng.
+Mỗi lần kiểm tra một ô được tính là một **probe**; gặp ô đã có khóa khác được tính là một **collision**. Dãy đầu vào gồm các khóa nguyên phân biệt và kích thước bảng được giữ cố định trong mỗi lượt chạy. Mô phỏng đo số lần thăm dò; để so sánh thời gian chạy thực tế còn cần đo tốc độ truy cập bộ nhớ và chi phí tính toán.
 
-## Nguồn tham khảo
+## Tài liệu tham khảo
 
 - Sedgewick & Wayne, *Algorithms, 4th Edition*, mục **3.4 Hash Tables**: https://algs4.cs.princeton.edu/34hash/
 - OpenDSA, *Improved Collision Resolution*: https://opendsa.org/OpenDSA/Books/CS3/html/HashCImproved.html
