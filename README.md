@@ -15,23 +15,23 @@ Giao diện một cột, phong cách báo cáo học thuật tối giản, tiế
 
 ## Chạy
 
-Mở trực tiếp \`index.html\` trong trình duyệt hiện đại. Không yêu cầu build hoặc framework.
+Mở trực tiếp `index.html` trong trình duyệt hiện đại. Không yêu cầu build hoặc framework.
 
-\`\`\`bash
+```bash
 node --test tests/probing.test.cjs
 javac src/ProbingStrategies.java
 java -cp src ProbingStrategies
-\`\`\`
+```
 
 ## Quy ước thí nghiệm
 
-- Bảng có \`M ∈ {11,13,17,19,23,29,31}\`, đều là số nguyên tố lớn hơn 7.
-- \`h₁(k) = k mod M\`; \`h₂(k) = 7 − (k mod 7)\`; modulo được chuẩn hóa cho khóa âm.
-- Thăm dò theo \`i=0,1,…\`: Linear \`h₁+i\`, Quadratic \`h₁+i²\`, Double \`h₁+i·h₂\` (lấy modulo M).
+- Bảng có `M ∈ {11,13,17,19,23,29,31}`, đều là số nguyên tố lớn hơn 7.
+- `h₁(k) = k mod M`; `h₂(k) = 7 − (k mod 7)`; modulo được chuẩn hóa cho khóa âm.
+- Thăm dò theo `i=0,1,…`: Linear `h₁+i`, Quadratic `h₁+i²`, Double `h₁+i·h₂` (lấy modulo M).
 - Đầu vào gồm các khóa nguyên **phân biệt**; không có xóa, tombstone hay tự động resize. Mỗi ô kiểm tra được tính là **một probe**; kiểm tra ô đã có khóa khác là **một collision**; báo cáo cả khóa không thể chèn.
-- Vì \`M\` là số nguyên tố >7, mọi bước \`h₂∈{1,…,7}\` nguyên tố cùng nhau với \`M\`; Double Hashing duyệt hết M ô. Quadratic với \`i²\` **không** luôn đi qua mọi ô.
+- Vì `M` là số nguyên tố >7, mọi bước `h₂∈{1,…,7}` nguyên tố cùng nhau với `M`; Double Hashing duyệt hết M ô. Quadratic với `i²` **không** luôn đi qua mọi ô.
 - Các số liệu trong mô phỏng là **đếm phép thăm dò**, không phải benchmark CPU hoặc phép đo cache miss. So sánh thời gian thực thi cần benchmark độc lập.
-- Các công thức kỳ vọng Linear Probing cần giả định uniform hashing và chỉ áp dụng cho \`0≤α<1\`; không dùng chúng như dự báo đúng cho các bộ dữ liệu cố tình gây collision.
+- Các công thức kỳ vọng Linear Probing cần giả định uniform hashing và chỉ áp dụng cho `0≤α<1`; không dùng chúng như dự báo đúng cho các bộ dữ liệu cố tình gây collision.
 
 ## Tài liệu
 
