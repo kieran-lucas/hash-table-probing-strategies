@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Ba cách xử lý va chạm trong bảng băm, một phép thử chung: xem cách Linear, Quadratic và Double Hashing thăm dò và chọn phương pháp phù hợp với workload.">
+  <meta name="description" content="So sánh Linear, Quadratic và Double Hashing: clustering, hệ số tải, cache locality và cách lựa chọn phương pháp thăm dò.">
   <meta name="theme-color" content="#ffffff">
   <title>Linear, Quadratic và Double Hashing | Hash Table</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,16 +21,15 @@
 <body>
 <main class="page">
   <header class="intro">
-    <p class="course">Cấu trúc dữ liệu và giải thuật</p>
-    <h1>Linear, Quadratic và Double Hashing</h1>
-    <p class="lead">Khi một khóa băm vào ô đã có phần tử, bảng phải tìm vị trí khác để lưu khóa mới. Linear Probing, Quadratic Probing và Double Hashing chọn vị trí tiếp theo theo ba cách khác nhau. Chúng ta sẽ chèn cùng một dãy khóa bằng cả ba phương pháp, rồi so sánh số lần thăm dò và những chi phí phát sinh khi triển khai.</p>
-  </header>
-
-  <section id="problem" aria-labelledby="problem-title">
-    <div class="section-label">01 — Đặt vấn đề</div>
-    <h2 id="problem-title">Xử lý va chạm bằng Open Addressing</h2>
-    <p>Giả sử bảng băm có 17 ô và sử dụng hàm \(h(k)=k\bmod17\). Khóa <code>17</code> được chèn vào ô 0. Khi chèn tiếp <code>34</code>, hàm băm cũng trả về 0, nhưng ô này đã có khóa <code>17</code>. Thuật toán phải thử một ô khác. Linear, Quadratic và Double Hashing khác nhau ở cách xác định ô được thử tiếp theo.</p>
-    <figure class="simple-figure">
+  <h1>Linear, Quadratic và Double Hashing</h1>
+  <p class="lead">Linear Probing dễ cài đặt và thường tận dụng cache tốt nhờ đọc các ô liên tiếp. Quadratic Probing giảm sự hình thành những cụm ô liền nhau, còn Double Hashing dùng bước nhảy riêng cho mỗi khóa để hạn chế trùng dãy thăm dò. Mức tải của bảng, cách các khóa phân bố và chi phí truy cập bộ nhớ quyết định phương pháp nào phù hợp hơn.</p>
+</header>
+  <section id="methods" aria-labelledby="methods-title">
+  <div class="section-label">01 — Cơ chế</div>
+  <h2 id="methods-title">Ba cách tìm ô trống</h2>
+  <p>Giả sử bảng có 17 ô và dùng hàm \(h(k)=k\bmod17\). Khóa <code>17</code> được chèn vào ô 0. Khi đến khóa <code>34</code>, hàm băm cũng trả về 0, nhưng ô này đã có phần tử. Với <em>open addressing</em>, khóa mới được lưu vào một ô trống khác trong chính bảng đó.</p>
+  <p>Linear Probing thử ô 1, rồi ô 2, ô 3 nếu cần. Quadratic Probing dịch chuyển lần lượt 1, 4, 9,… ô tính từ vị trí ban đầu. Double Hashing tính bước nhảy từ hàm băm thứ hai. Cả ba bắt đầu ở cùng một ô; thứ tự thử những ô tiếp theo mới là điểm khác nhau.</p>
+  <figure class="simple-figure">
       <div class="figure-title">Tám khóa có cùng vị trí băm ban đầu: \(M=17,\;h(k)=k\bmod17\)</div>
       <div class="home-demo" aria-label="Tám khóa từ 17 đến 136, đều là bội của 17 và cùng băm vào ô 0">
         <div class="home-keys"><span>17</span><span>34</span><span>51</span><span>68</span><span>85</span><span>102</span><span>119</span><span>136</span></div>
@@ -57,14 +56,8 @@
       </div>
       <figcaption>Cả tám khóa đều là bội số của 17 nên cùng băm về ô 0. Ta dùng dãy này để quan sát số lần va chạm tăng lên khi bảng nhận thêm khóa.</figcaption>
     </figure>
-    <p>Chèn lần lượt tám khóa trong hình, Linear Probing đặt chúng vào các ô từ 0 đến 7. Quadratic Probing đưa chúng tới những vị trí cách xa nhau hơn. Tuy khác vị trí lưu, hai phương pháp đều thực hiện \(1+2+\cdots+8=36\) lần thăm dò. Double Hashing chỉ cần <strong>15 lần</strong> trong cùng phép thử. Sự chênh lệch này bắt nguồn từ cách mỗi phương pháp tạo ra dãy ô cần kiểm tra.</p>
-  </section>
-
-  <section id="methods" aria-labelledby="methods-title">
-    <div class="section-label">02 — Ba phương pháp</div>
-    <h2 id="methods-title">Cách xác định vị trí thăm dò</h2>
-    <p>Gọi \(p_i\) là vị trí được kiểm tra ở lần thăm dò thứ \(i\), bắt đầu từ \(i=0\). Cả ba phương pháp đều thử ô \(h(k)\) trước; khi ô đó đã có khóa, chúng dùng các công thức sau để tìm vị trí tiếp theo. Mọi vị trí đều được lấy modulo \(M\), trong đó \(M\) là kích thước bảng.</p>
-    <div class="equation-list">
+  <p>Gọi \(p_i\) là vị trí được thử ở lượt thứ \(i\), bắt đầu từ \(i=0\). Với bảng có \(M\) ô, ba công thức là:</p>
+  <div class="equation-list">
       <div class="equation-row">
         <div class="equation-name"><b>01</b><strong>Linear Probing</strong><span>Đi tiếp một ô</span></div>
         <div class="equation-math">\(p_i=(h(k)+i)\bmod M\)</div>
@@ -78,22 +71,10 @@
         <div class="equation-math">\(p_i=(h_1(k)+i\,h_2(k))\bmod M\)</div>
       </div>
     </div>
-    <h3>Primary clustering và secondary clustering</h3>
-    <p>Linear Probing di chuyển sang ô kế tiếp mỗi khi gặp va chạm. Sau khi <code>17</code> nằm ở ô 0, khóa <code>34</code> phải chuyển sang ô 1; khóa <code>51</code> đi qua cả ô 0 lẫn ô 1 mới được chèn vào ô 2. Các ô đã chiếm dần tạo thành một đoạn liên tiếp. Một khóa băm vào giữa đoạn này phải kiểm tra đến cuối đoạn mới gặp ô trống, khiến cụm tiếp tục dài ra. Hiện tượng đó được gọi là <strong>primary clustering</strong>.</p>
-    <p>Quadratic Probing thử các độ dịch chuyển \(0,1,4,9,16,\ldots\) tính từ vị trí băm ban đầu. Với \(M=17\) và \(h(k)=0\), những ô được thử lần lượt là \(0\to1\to4\to9\to16\to8\to2\to15\). Các khóa nằm rải rác trong bảng, nhưng tám khóa có cùng \(h(k)=0\) đều phải thử đúng dãy này. Bởi vậy, số lượt thăm dò vẫn là 36. Việc các khóa cùng vị trí băm ban đầu sử dụng chung một dãy được gọi là <strong>secondary clustering</strong>.</p>
-    <p>Double Hashing dùng thêm hàm \(h_2(k)\) để tính bước nhảy. Chẳng hạn trong ví dụ này, \(h_2(34)=1\) nên khóa <code>34</code> thử ô 1 sau ô 0, còn \(h_2(51)=5\) nên khóa <code>51</code> thử ngay ô 5. Hai khóa cùng băm về 0 vì thế có thể kiểm tra các ô khác nhau từ lần thăm dò thứ hai. Với tám khóa đang xét, cách này giảm tổng số lần kiểm tra xuống 15. Những khóa trùng cả \(h_1\) lẫn \(h_2\) vẫn có cùng dãy thăm dò.</p>
-    <h3>Khả năng duyệt hết bảng</h3>
-    <p>Cách xác định vị trí cũng quyết định một khóa có thể kiểm tra bao nhiêu ô trong bảng. Linear Probing lần lượt đi qua đủ \(M\) ô. Double Hashing có tính chất tương tự nếu bước nhảy \(h_2(k)\) nguyên tố cùng nhau với \(M\):</p>
-    <div class="math-display">\[\gcd(h_2(k),M)=1\quad\Longrightarrow\quad\text{Double Hashing duyệt đủ } M \text{ ô.}\]</div>
-    <p>Với Quadratic Probing dạng \(i^2\), một bảng có kích thước nguyên tố lẻ chỉ cho phép thăm dò \((M+1)/2\) ô khác nhau từ một vị trí ban đầu. Ví dụ, nếu \(M=11\) và \(h(k)=0\), dãy là \(0\to1\to4\to9\to5\to3\). Sau khi sáu ô này đã có khóa, khóa thứ bảy cùng băm về 0 sẽ chèn thất bại dù bảng vẫn còn năm ô trống. Bộ dữ liệu <strong>“Quadratic bỏ sót ô trống”</strong> trong mô phỏng tái hiện trường hợp này.</p>
-    <p class="small">Để mỗi bước nhảy của Double Hashing luôn hợp lệ, phần mô phỏng dùng \(h_1(k)=k\bmod M\), \(h_2(k)=7-(k\bmod7)\) và các kích thước bảng nguyên tố từ 11 đến 31. Những số nguyên tố này đều lớn hơn 7, nên \(h_2(k)\) luôn nguyên tố cùng nhau với \(M\). Với Quadratic, ta giữ công thức \(i^2\); các biến thể bậc hai khác có thể có tính chất bao phủ khác.</p>
-  </section>
-
-  <section id="code" aria-labelledby="code-title">
-    <div class="section-label">03 — Cài đặt Java</div>
-    <h2 id="code-title">Cài đặt các phương pháp thăm dò</h2>
-    <p>Cả ba phương pháp đều chèn khóa theo cùng một quy trình: tính vị trí, kiểm tra ô đó và chuyển sang vị trí khác nếu xảy ra va chạm. Điểm khác biệt nằm ở hàm <code>probe()</code>, nơi tính chỉ số của ô cần kiểm tra. Đoạn Java sau đặt ba cách tính vào cùng một hàm; <a href="src/ProbingStrategies.java">mã nguồn đầy đủ</a> còn có hàm chèn, tìm kiếm và ví dụ chạy thử.</p>
-    <div class="code-heading"><h3>Hàm thăm dò trong Java</h3><button type="button" id="copy-code" class="copy">Sao chép</button></div>
+  <p>Tám khóa trên đều băm về ô 0. Linear sẽ lấp các ô kế tiếp; Quadratic thử dãy \(0\to1\to4\to9\to16\to\cdots\); còn Double Hashing có thể thử những dãy khác nhau cho từng khóa. Các bước chèn cụ thể được giữ lại trong phần mô phỏng.</p>
+  <h3>Cài đặt Java</h3>
+  <p>Vòng lặp chèn vẫn làm một việc: tính vị trí, kiểm tra ô đó và thử ô tiếp theo nếu xảy ra va chạm. Chỉ cần thay đổi cách tính vị trí trong <code>probe()</code>. <a href="src/ProbingStrategies.java">File Java đầy đủ</a> có cả thao tác chèn và tìm kiếm.</p>
+  <div class="code-heading"><h3>Hàm thăm dò trong Java</h3><button type="button" id="copy-code" class="copy">Sao chép</button></div>
     <pre class="code" tabindex="0"><code id="java-code">public enum Method { LINEAR, QUADRATIC, DOUBLE }
 
 public static int secondHash(int k) {
@@ -112,15 +93,42 @@ public static int probe(Method method, int key, int attempt, int m) {
     }
     return (int) ((home + offset) % m);
 }</code></pre>
-    <p class="small">Trong Java, phép nhân được ép sang kiểu <code>long</code> trước khi tính độ dịch chuyển. Khi chèn, chương trình cũng ghi nhận các ô đã thử để dừng lại nếu dãy thăm dò bắt đầu lặp.</p>
-  </section>
-
+  <p class="small">Độ dịch chuyển được tính ở kiểu <code>long</code> trước khi lấy modulo và chuyển về chỉ số của bảng.</p>
+</section>
+  <section id="analysis" aria-labelledby="analysis-title">
+  <div class="section-label">02 — Phân tích</div>
+  <h2 id="analysis-title">Clustering và hệ số tải</h2>
+  <p>Với tám khóa cùng băm về ô 0, Linear Probing cần \(1+2+\cdots+8=36\) lượt thăm dò. Các khóa được xếp vào một đoạn liên tiếp từ ô 0 đến ô 7. Nếu một khóa mới băm vào giữa đoạn này, nó phải kiểm tra đến hết đoạn mới gặp ô trống. Đoạn càng dài càng dễ thu hút thêm khóa — đó là <em>primary clustering</em>.</p>
+  <p>Quadratic Probing đưa khóa vào những ô rải rác hơn, nhưng cũng cần 36 lượt thăm dò. Tất cả khóa có cùng \(h(k)=0\) đều phải kiểm tra chung dãy \(0,1,4,9,16,8,2,15,\ldots\). Hiện tượng các khóa có cùng vị trí băm ban đầu phải dùng cùng một dãy được gọi là <em>secondary clustering</em>.</p>
+  <p>Double Hashing giảm sự trùng dãy bằng \(h_2(k)\). Trong ví dụ này, \(h_2(34)=1\) nên khóa <code>34</code> thử ô 1 sau ô 0; \(h_2(51)=5\) nên khóa <code>51</code> thử ô 5. Tổng cộng tám khóa chỉ cần <strong>15 probe</strong>. Hai khóa trùng cả \(h_1\) và \(h_2\) vẫn có thể phải đi cùng dãy.</p>
+  <h3>Trường hợp bảng còn trống mà vẫn chèn thất bại</h3>
+  <p>Linear có thể thử đủ \(M\) ô. Double Hashing cũng vậy nếu \(\gcd(h_2(k),M)=1\). Riêng Quadratic dạng \(i^2\), với \(M\) nguyên tố lẻ, chỉ thử được \((M+1)/2\) ô khác nhau tính từ một vị trí ban đầu. Ví dụ trên bảng 11 ô, khóa băm về 0 chỉ đi qua \(0\to1\to4\to9\to5\to3\). Nếu cả sáu ô ấy đã có khóa, lần chèn tiếp theo thất bại dù còn năm ô trống.</p>
+  <p>Với biến thể \(i^2\) và kích thước bảng nguyên tố, giữ hệ số tải dưới 50% sẽ bảo đảm mỗi lần chèn tìm được ô trống. Phần mô phỏng dùng các kích thước nguyên tố từ 11 đến 31 và \(h_2(k)=7-(k\bmod7)\); mọi bước nhảy của Double Hashing khi đó đều nguyên tố cùng nhau với \(M\).</p>
+  <h3>Ảnh hưởng của hệ số tải</h3>
+  <p>Gọi \(\alpha=N/M\) là hệ số tải, với \(N\) là số khóa đã lưu. Dưới giả định hàm băm phân phối đều, Sedgewick và Wayne đưa ra hai xấp xỉ cho số probe kỳ vọng của Linear Probing:</p>
+  <div class="formula-pair">
+      <div><span>Tìm thấy khóa</span><div>\[E_{\mathrm{hit}}\approx \frac12\left(1+\frac1{1-\alpha}\right)\]</div></div>
+      <div><span>Không thấy khóa / chèn vào bảng</span><div>\[E_{\mathrm{miss}}\approx \frac12\left(1+\frac1{(1-\alpha)^2}\right)\]</div></div>
+    </div>
+    <div class="load-lab">
+      <div class="load-heading"><label for="alpha">Thử thay đổi hệ số tải \(\alpha\)</label><output id="alpha-label" for="alpha">0,50</output></div>
+      <input type="range" id="alpha" min="5" max="95" step="5" value="50">
+      <div class="load-marks"><span>0,05</span><span>0,50</span><span>0,95</span></div>
+      <div class="expectation-values"><div><span>Tìm thấy</span><strong id="expected-hit">1,50</strong><small>probe kỳ vọng</small></div><div><span>Không thấy</span><strong id="expected-miss">2,50</strong><small>probe kỳ vọng</small></div></div>
+      <div class="bar-compare">
+        <div><span>Hit</span><div class="bar-track"><i id="bar-hit"></i></div></div>
+        <div><span>Miss</span><div class="bar-track"><i id="bar-miss"></i></div></div>
+      </div>
+      <p class="small">Hai thanh thể hiện số probe kỳ vọng tại mức \(\alpha\) đang chọn. Các công thức dựa trên giả định băm đều, còn ví dụ tám khóa phía trên cố ý tạo nhiều va chạm tại một vị trí.</p>
+    </div>
+  <p>Ở \(\alpha=0{,}5\), một phép tìm kiếm thành công cần trung bình khoảng 1,5 probe; tìm kiếm không thành công cần khoảng 2,5 probe. Khi bảng gần đầy, phép tìm không thành công thường phải đi qua các cụm dài hơn. Vì vậy, Linear Probing thường được kết hợp với chính sách mở rộng bảng trước khi hệ số tải quá cao.</p>
+</section>
   <section id="lab" aria-labelledby="lab-title">
-    <div class="section-label">04 — Mô phỏng tương tác</div>
-    <h2 id="lab-title">Mô phỏng chèn khóa</h2>
-    <p>Phần mô phỏng tạo ba bảng băm độc lập, cùng kích thước và cùng dãy khóa. Khi nhấn <strong>Phát</strong>, cả ba bắt đầu với khóa đầu tiên. Phương pháp nào chèn xong trước sẽ giữ nguyên bảng của mình cho đến khi hai phương pháp còn lại hoàn tất, rồi cả ba cùng chuyển sang khóa tiếp theo.</p>
-    <p>Hãy chú ý lượt chèn khóa cuối cùng, <code>136</code>. Linear và Quadratic mỗi cách cần kiểm tra tám ô, trong khi Double Hashing chỉ cần hai. Thanh tiến trình cho phép quay lại từng lần kiểm tra; bạn cũng có thể thay dãy khóa để xem kết quả thay đổi ra sao.</p>
-    <div class="lab">
+  <div class="section-label">03 — Mô phỏng</div>
+  <h2 id="lab-title">Theo dõi từng lần chèn</h2>
+  <p>Ba bảng băm bên dưới dùng cùng kích thước, cùng hàm băm chính và nhận cùng một dãy khóa. Khi bấm <strong>Phát</strong>, cả ba cùng xử lý khóa đầu tiên. Phương pháp nào chèn xong trước sẽ giữ nguyên bảng cho đến khi hai phương pháp còn lại hoàn thành, rồi cả ba chuyển sang khóa tiếp theo.</p>
+  <p>Với dữ liệu mặc định, hãy xem lượt chèn khóa <code>136</code>. Linear và Quadratic mỗi cách phải kiểm tra tám ô, còn Double Hashing chỉ cần hai. Sau đó, chọn mẫu <strong>“Linear ít probe hơn Double”</strong> để kiểm tra một tình huống ngược lại.</p>
+  <div class="lab">
       <div class="input-row-top">
         <label for="preset">Dữ liệu mẫu</label>
         <select id="preset">
@@ -193,73 +201,48 @@ public static int probe(Method method, int key, int attempt, int m) {
         <div id="search-results" class="search-results" aria-live="polite"></div>
       </div>
     </div>
-  </section>
-
-  <section id="analysis" aria-labelledby="analysis-title">
-    <div class="section-label">05 — Phân tích định lượng</div>
-    <h2 id="analysis-title">Ảnh hưởng của hệ số tải</h2>
-    <p>Số lần thăm dò thường tăng khi bảng đầy dần. Đặt \(\alpha=N/M\) là <em>hệ số tải</em>, với \(N\) là số khóa đã được chèn và \(M\) là số ô của bảng. Với Linear Probing, dưới giả định hàm băm phân phối khóa đều, Sedgewick và Wayne đưa ra các xấp xỉ sau cho số lượt thăm dò kỳ vọng:</p>
-    <div class="formula-pair">
-      <div><span>Tìm thấy khóa</span><div>\[E_{\mathrm{hit}}\approx \frac12\left(1+\frac1{1-\alpha}\right)\]</div></div>
-      <div><span>Không thấy khóa / chèn vào bảng</span><div>\[E_{\mathrm{miss}}\approx \frac12\left(1+\frac1{(1-\alpha)^2}\right)\]</div></div>
-    </div>
-    <div class="load-lab">
-      <div class="load-heading"><label for="alpha">Thử thay đổi hệ số tải \(\alpha\)</label><output id="alpha-label" for="alpha">0,50</output></div>
-      <input type="range" id="alpha" min="5" max="95" step="5" value="50">
-      <div class="load-marks"><span>0,05</span><span>0,50</span><span>0,95</span></div>
-      <div class="expectation-values"><div><span>Tìm thấy</span><strong id="expected-hit">1,50</strong><small>probe kỳ vọng</small></div><div><span>Không thấy</span><strong id="expected-miss">2,50</strong><small>probe kỳ vọng</small></div></div>
-      <div class="bar-compare">
-        <div><span>Hit</span><div class="bar-track"><i id="bar-hit"></i></div></div>
-        <div><span>Miss</span><div class="bar-track"><i id="bar-miss"></i></div></div>
-      </div>
-      <p class="small">Hai thanh thể hiện số probe kỳ vọng tại mức \(\alpha\) đang chọn. Các công thức dựa trên giả định băm đều, còn ví dụ tám khóa phía trên cố ý tạo nhiều va chạm tại một vị trí.</p>
-    </div>
-    <p>Khi \(\alpha=0{,}5\), trung bình một lần tìm kiếm thành công cần khoảng <strong>1,5 probe</strong>; tìm kiếm không thành công cần khoảng <strong>2,5 probe</strong>. Khi bảng gần đầy, phép tìm không thành công tăng chi phí nhanh hơn vì thường phải đi qua một cụm dài mới gặp ô trống. Vì thế, các bảng dùng Linear Probing thường được mở rộng khi hệ số tải đạt một ngưỡng nhất định.</p>
-    <p>Các xấp xỉ trên dành cho Linear Probing; Quadratic và Double Hashing có các dãy thăm dò khác nên cần mô hình phân tích tương ứng. Khi đánh giá thời gian chạy, ta còn phải tính đến chi phí đọc bộ nhớ: hai thuật toán kiểm tra cùng số ô vẫn có thể chạy với tốc độ khác nhau.</p>
-  </section>
-
+  <p>Ở mẫu thứ hai, ô 1 đang chứa <code>1</code>, ô 4 đang chứa <code>4</code>. Khi chèn <code>18</code>, Linear chuyển từ ô 1 sang ô 2 còn trống. Double Hashing có \(h_2(18)=3\), nên thử ô 4 đã bị chiếm rồi mới tới ô 7. Với tám khóa trong mẫu này, Linear và Quadratic cần <strong>9 probe</strong>, còn Double cần <strong>10 probe</strong>. Kết quả phụ thuộc vào dữ liệu được chèn, chứ không chỉ vào phương pháp.</p>
+</section>
   <section id="tradeoffs" aria-labelledby="tradeoffs-title">
-    <div class="section-label">06 — Đánh đổi và lựa chọn</div>
-    <h2 id="tradeoffs-title">So sánh hiệu năng và trade-off</h2>
-    <p>Trong ví dụ tám khóa, Double Hashing kiểm tra 15 ô, còn Linear và Quadratic đều cần 36 lần kiểm tra. Linear thường đọc các phần tử nằm cạnh nhau trong mảng, nên CPU có thể tận dụng dữ liệu đã nạp vào cache. Double Hashing lại thường truy cập những vị trí xa hơn. Vì thế, ngoài số probe, cần xét cả chi phí của mỗi lần đọc bộ nhớ khi so sánh thời gian chạy.</p>
-    <h3>Linear Probing và cache locality</h3>
-    <p>Linear Probing phù hợp với bảng có hệ số tải thấp hoặc vừa phải và hàm băm phân phối tương đối đều. Nó chỉ cần tăng chỉ số để tìm ô kế tiếp, đồng thời tận dụng tốt các vùng nhớ liên tiếp. Khi nhiều khóa băm vào cùng một vùng, các cụm ô đã chiếm dài ra và số lần kiểm tra tăng nhanh.</p>
-    <h3>Quadratic Probing và primary clustering</h3>
-    <p>Quadratic Probing kiểm tra các ô cách xa nhau hơn thay vì quét một đoạn liên tiếp như Linear. Nhờ vậy, nó hạn chế primary clustering mà vẫn chỉ cần một hàm băm. Đổi lại, những khóa có cùng giá trị băm ban đầu vẫn dùng chung dãy thăm dò; với công thức \(i^2\), cách chọn kích thước bảng và ngưỡng tải còn quyết định khả năng tìm thấy ô trống.</p>
-    <h3>Double Hashing và secondary clustering</h3>
-    <p>Double Hashing giảm sự trùng dãy giữa các khóa cùng băm về một ô bằng cách dùng thêm \(h_2(k)\). Với bước nhảy nguyên tố cùng nhau với \(M\), thuật toán có thể kiểm tra toàn bộ bảng trước khi lặp vị trí. Phương pháp này cần thêm một phép tính băm và thường truy cập các ô cách xa nhau trong bộ nhớ; việc xóa khóa cũng phải giữ đúng quy tắc tìm kiếm.</p>
-    <div class="metrics-scroll">
-      <table class="tradeoff-table">
-        <thead><tr><th>Tiêu chí</th><th>Linear</th><th>Quadratic</th><th>Double</th></tr></thead>
-        <tbody>
-          <tr><td>Primary clustering</td><td>Rõ rệt</td><td>Giảm</td><td>Giảm mạnh</td></tr>
-          <tr><td>Secondary clustering</td><td>Dãy trùng khi cùng hash</td><td>Có</td><td>Giảm mạnh*</td></tr>
-          <tr><td>Cache locality</td><td>Rất tốt</td><td>Kém liên tục</td><td>Thường kém hơn</td></tr>
-          <tr><td>Chi phí tính toán</td><td>Ít nhất</td><td>Nhỏ</td><td>Thêm h₂</td></tr>
-          <tr><td>Duyệt đủ M ô</td><td>Luôn có</td><td>Không luôn có</td><td>Nếu gcd = 1</td></tr>
-          <tr><td>Xóa trực tiếp</td><td>Cần cẩn trọng</td><td>Cần cẩn trọng</td><td>Cần cẩn trọng</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="small">* Hai khóa có cùng \(h_1\) và \(h_2\) vẫn thăm dò cùng dãy. Với mọi phương pháp địa chỉ mở, xóa một khóa cần xử lý ô đã xóa hoặc tổ chức lại dữ liệu để không làm gián đoạn thao tác tìm kiếm.</p>
-  </section>
-
+  <div class="section-label">04 — Trade-off</div>
+  <h2 id="tradeoffs-title">Số probe và thời gian chạy</h2>
+  <p>Số probe đếm số ô được kiểm tra. Nó giúp thấy rõ ảnh hưởng của clustering, nhưng thời gian chạy còn phụ thuộc vào mỗi lần đọc bộ nhớ tốn bao nhiêu chi phí. Hai ô đứng cạnh nhau trong mảng thường được CPU truy cập hiệu quả hơn hai ô nằm xa nhau vì dữ liệu có thể đã được nạp vào cache.</p>
+  <p>Linear Probing thường đọc các ô liên tiếp nên có ưu thế về tính cục bộ bộ nhớ. Quadratic và Double Hashing phân tán vị trí kiểm tra hơn; Double còn phải tính thêm hàm băm phụ. Nhờ giảm va chạm, chúng có thể dùng ít probe hơn, nhưng mỗi probe có thể tốn thời gian truy cập hơn. Đó là đánh đổi quan trọng khi đem thuật toán vào chương trình thực tế.</p>
+  <div class="metrics-scroll">
+    <table class="tradeoff-table">
+      <thead><tr><th>Tiêu chí</th><th>Linear</th><th>Quadratic (\(i^2\))</th><th>Double</th></tr></thead>
+      <tbody>
+        <tr><td>Thăm dò</td><td>Ô kế tiếp</td><td>Dịch chuyển theo \(i^2\)</td><td>Bước nhảy \(h_2(k)\)</td></tr>
+        <tr><td>Clustering điển hình</td><td>Primary</td><td>Secondary</td><td>Giảm trùng dãy</td></tr>
+        <tr><td>Truy cập bộ nhớ</td><td>Liên tiếp</td><td>Phân tán hơn</td><td>Thường phân tán hơn</td></tr>
+        <tr><td>Chi phí tính toán</td><td>Ít</td><td>Tính \(i^2\)</td><td>Thêm hàm băm</td></tr>
+        <tr><td>Duyệt đủ bảng</td><td>Có</td><td>Không bảo đảm với \(i^2\)</td><td>Nếu \(\gcd(h_2,M)=1\)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Trong mẫu “Phân phối đều”, cả ba chèn sáu khóa với đúng sáu probe vì không có va chạm. Lúc đó, các bước tính toán phức tạp hơn chưa mang lại lợi ích về số probe. Muốn kết luận cách nào chạy nhanh hơn, cần benchmark thời gian trên dữ liệu đủ lớn và nhiều hệ số tải; mô phỏng hiện tại chỉ đo số ô được kiểm tra.</p>
+</section>
   <section id="conclusion" aria-labelledby="conclusion-title">
-    <div class="section-label">07 — Kết luận</div>
-    <h2 id="conclusion-title">Lựa chọn phương pháp thăm dò</h2>
-    <p class="conclusion-lead">Ba phương pháp phù hợp với những điều kiện khác nhau. Linear Probing là lựa chọn đơn giản, tận dụng cache tốt khi bảng còn tương đối thưa. Quadratic Probing giảm các cụm liên tiếp, còn Double Hashing giảm sự trùng dãy thăm dò giữa những khóa có cùng giá trị băm ban đầu. Ví dụ tám khóa cho thấy rõ lợi thế của Double Hashing về số probe, nhưng việc lựa chọn trong ứng dụng thực tế còn phụ thuộc mức tải và chi phí truy cập bộ nhớ.</p>
-    <p>Cách đánh giá hợp lý là đo riêng số lượt thăm dò và thời gian thực thi trên dữ liệu đại diện cho ứng dụng. Đặt hai kết quả cạnh hệ số tải và đặc điểm phân phối khóa sẽ cho thấy chiến lược nào phù hợp hơn.</p>
-    <div class="sources">
+  <div class="section-label">05 — Lựa chọn</div>
+  <h2 id="conclusion-title">Khi nào dùng phương pháp nào?</h2>
+  <h3>Linear Probing</h3>
+  <p>Ưu tiên Linear khi hàm băm phân phối tương đối đều, bảng có hệ số tải thấp hoặc vừa và tốc độ đọc bộ nhớ quan trọng. Cách cài đặt đơn giản, tận dụng cache tốt. Đổi lại, cần kiểm soát mức tải vì các cụm ô liên tiếp có thể dài ra nhanh chóng.</p>
+  <h3>Quadratic Probing</h3>
+  <p>Quadratic phù hợp khi muốn giảm primary clustering mà vẫn dùng một hàm băm. Với biến thể \(i^2\) trong bài, hãy chọn kích thước bảng nguyên tố và giữ hệ số tải dưới 50% để chắc chắn tìm được ô trống khi chèn. Các khóa cùng vị trí băm ban đầu vẫn dùng chung dãy thăm dò.</p>
+  <h3>Double Hashing</h3>
+  <p>Chọn Double Hashing khi nhiều khóa băm vào cùng một vùng và sự trùng dãy khiến số probe tăng cao. Hàm băm phụ cho phép những khóa cùng vị trí ban đầu thử các ô khác nhau. Bước nhảy phải nguyên tố cùng nhau với \(M\); đổi lại là phép tính bổ sung và các lần đọc bộ nhớ ít liên tục hơn.</p>
+  <p>Trong ứng dụng thực tế, nên kiểm tra phân phối khóa và hệ số tải rồi đo cả số probe lẫn thời gian chạy. Dữ liệu cố tình gây va chạm trong bài giúp quan sát cơ chế; dữ liệu đại diện cho hệ thống mới là cơ sở để chọn cách triển khai.</p>
+  <div class="sources">
       <h3>Tài liệu tham khảo</h3>
       <ol>
         <li>R. Sedgewick &amp; K. Wayne, <em>Algorithms, 4th Edition</em>, mục 3.4 <em>Hash Tables</em>, đặc biệt slide 25–35, 42–43. <a href="https://algs4.cs.princeton.edu/34hash/" target="_blank" rel="noopener noreferrer">Princeton · 3.4</a>.</li>
-        <li>OpenDSA, <em>Improved Collision Resolution</em> — Quadratic Probing và Double Hashing. <a href="https://opendsa.cs.vt.edu/ODSA/StandaloneModules/20260527004920/html/HashCImproved.html" target="_blank" rel="noopener noreferrer">OpenDSA</a>.</li>
+        <li>OpenDSA, <em>Improved Collision Resolution</em> — Quadratic Probing và Double Hashing. <a href="https://opendsa.org/OpenDSA/Books/CS3/html/HashCImproved.html" target="_blank" rel="noopener noreferrer">OpenDSA</a>.</li>
         <li>Aalto University, <em>Hashing and hash tables</em> — clustering và các biến thể thăm dò. <a href="https://tarjotin.cs.aalto.fi/CS-A1140/2022/notes/hashing-tables.html" target="_blank" rel="noopener noreferrer">Aalto · CS-A1140</a>.</li>
         <li>MIT OCW 6.006, <em>Open Addressing, Cryptographic Hashing</em>. <a href="https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/a7f609148928e4a10653d3f3be03a2b5_MIT6_006F11_lec10.pdf" target="_blank" rel="noopener noreferrer">MIT OCW lecture 10</a>.</li>
       </ol>
       <p class="small">Các công thức về Linear Probing được lấy từ tài liệu Princeton; phần Quadratic và điều kiện thăm dò của Double Hashing tham khảo thêm OpenDSA, Aalto và MIT.</p>
     </div>
-  </section>
+</section>
   <footer class="footer"><span>Hash Table Probing Strategies · DSA</span><a href="https://github.com/kieran-lucas/hash-table-probing-strategies" target="_blank" rel="noopener noreferrer">GitHub repository ↗</a></footer>
 </main>
 </body>
