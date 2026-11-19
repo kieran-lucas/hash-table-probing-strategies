@@ -1,26 +1,28 @@
 # Linear, Quadratic và Double Hashing
 
-Khi hai khóa cùng băm về một ô, bảng cần tìm chỗ lưu cho khóa đến sau. Linear Probing thử lần lượt các ô tiếp theo; Quadratic Probing tính vị trí từ bình phương số lần thăm dò; còn Double Hashing dùng một hàm băm thứ hai để xác định bước nhảy. Bài viết so sánh ba cách xử lý va chạm này bằng mã Java, mô phỏng từng bước và số lần kiểm tra ô.
+Ba cách thăm dò phổ biến trong bảng băm có những điểm mạnh khác nhau. Linear Probing đọc các ô liên tiếp, dễ cài đặt và tận dụng cache tốt. Quadratic Probing giảm các cụm ô liền nhau. Double Hashing dùng thêm một hàm băm để các khóa cùng vị trí ban đầu có thể dò theo những dãy khác nhau.
+
+Bài viết phân tích khi nào nên dùng mỗi cách, giải thích các yếu tố gây clustering và so sánh kết quả trên cùng dữ liệu đầu vào.
 
 **[Đọc bài viết và chạy mô phỏng](https://kieran-lucas.github.io/hash-table-probing-strategies/)**
 
-## Ví dụ
+## Nội dung
 
-Dãy mặc định gồm tám khóa `17, 34, 51, 68, 85, 102, 119, 136` được chèn vào bảng có `M = 17`. Cả tám khóa đều băm về ô 0. Kết quả:
+Bài viết có năm phần: cơ chế thăm dò, clustering và hệ số tải, mô phỏng chèn khóa, đánh đổi về số probe và truy cập bộ nhớ, cuối cùng là cách chọn phương pháp.
 
-| Phương pháp | Số lần thăm dò | Khóa chèn thành công |
+Mô phỏng cho phép phát từng bước, thay đổi khóa, xem số probe/collision và thử tìm kiếm. Dữ liệu mặc định là tám khóa cùng băm về ô 0 trong bảng 17 ô:
+
+| Phương pháp | Probe | Khóa chèn được |
 | --- | ---: | ---: |
 | Linear Probing | 36 | 8 |
 | Quadratic Probing (`i²`) | 36 | 8 |
 | Double Hashing | 15 | 8 |
 
-Linear lấp các ô liên tiếp từ 0 đến 7. Quadratic phân tán khóa sang nhiều ô khác nhau nhưng vẫn thử lại cùng một dãy vì các khóa có cùng vị trí băm ban đầu. Với Double Hashing, bước nhảy thay đổi theo khóa nên nhiều lần va chạm được tránh ngay từ lượt thử thứ hai.
-
-Mô phỏng cho phép phát, tạm dừng, tua theo từng bước và thay đổi dữ liệu. Bảng thống kê hiển thị số probe, số va chạm và các lần chèn thất bại. Bạn cũng có thể tìm kiếm một khóa hoặc thay đổi hệ số tải để khảo sát công thức kỳ vọng của Linear Probing.
+Có thêm mẫu `1, 4, 18, 0, 6, 9, 12, 15` (cũng trên bảng 17 ô). Trong mẫu này, Linear và Quadratic dùng 9 probe, Double dùng 10. Hai phép thử cho thấy kết quả phụ thuộc đáng kể vào cách các khóa phân bố trong bảng.
 
 ## Chạy và kiểm thử
 
-Website sử dụng HTML, CSS và JavaScript thuần. Mở `index.html` trong trình duyệt hoặc dùng một máy chủ tĩnh.
+Website dùng HTML, CSS và JavaScript thuần. Mở `index.html` trong trình duyệt hoặc sử dụng máy chủ tĩnh.
 
 ```bash
 node --test tests/probing.test.cjs
@@ -28,19 +30,17 @@ javac src/ProbingStrategies.java
 java -cp src ProbingStrategies
 ```
 
-`engine.js` xử lý thuật toán và lưu các bước thăm dò, `app.js` điều khiển giao diện, còn `src/ProbingStrategies.java` cung cấp phần cài đặt Java. GitHub Actions chạy kiểm thử Node.js và kiểm tra mã Java sau mỗi lần push.
+`engine.js` cài đặt các dãy thăm dò và ghi lại trạng thái bảng, `app.js` điều khiển mô phỏng, `src/ProbingStrategies.java` là bản Java. GitHub Actions kiểm thử lõi JavaScript và Java sau mỗi lần push.
 
-## Quy ước mô phỏng
+## Quy ước
 
-Bảng có kích thước nguyên tố `M ∈ {11, 13, 17, 19, 23, 29, 31}`. Các hàm băm được chọn là `h₁(k) = k mod M` và `h₂(k) = 7 − (k mod 7)`. Tùy phương pháp, độ dịch chuyển ở lượt thứ `i` là `i`, `i²` hoặc `i·h₂(k)`.
+Bảng sử dụng kích thước nguyên tố `M ∈ {11, 13, 17, 19, 23, 29, 31}`. Hàm băm chính là `h₁(k) = k mod M`; bước nhảy của Double Hashing là `h₂(k) = 7 − (k mod 7)`. Quadratic dùng biến thể `i²`, nên chỉ thăm dò được một phần các ô trong bảng có kích thước nguyên tố lẻ.
 
-Một **probe** được tính mỗi khi kiểm tra một ô; **collision** xảy ra khi ô đó đã có khóa khác. Mô phỏng dùng các khóa nguyên phân biệt, không thay đổi kích thước bảng trong lúc chèn. Các số liệu là số lần kiểm tra ô, còn thời gian chạy thực tế phụ thuộc thêm vào chi phí tính toán và truy cập bộ nhớ.
+Một **probe** là một lần kiểm tra ô; một **collision** xảy ra nếu ô đã chứa khóa khác. Đầu vào gồm các khóa nguyên phân biệt. Bảng giữ nguyên kích thước trong suốt lần chạy. Số probe cho biết thuật toán kiểm tra bao nhiêu ô, còn tốc độ thực thi phụ thuộc cả cách truy cập bộ nhớ và phần cứng.
 
-## Tài liệu tham khảo
+## Nguồn tham khảo
 
-- Robert Sedgewick & Kevin Wayne, *Algorithms, 4th Edition*, **3.4 Hash Tables**, slide 25–35 và 42–43: https://algs4.cs.princeton.edu/34hash/
-- OpenDSA, *Improved Collision Resolution*: https://opendsa.cs.vt.edu/ODSA/StandaloneModules/20260527004920/html/HashCImproved.html
+- Sedgewick & Wayne, *Algorithms, 4th Edition*, mục **3.4 Hash Tables**: https://algs4.cs.princeton.edu/34hash/
+- OpenDSA, *Improved Collision Resolution*: https://opendsa.org/OpenDSA/Books/CS3/html/HashCImproved.html
 - Aalto University, *Hashing and hash tables*: https://tarjotin.cs.aalto.fi/CS-A1140/2022/notes/hashing-tables.html
 - MIT OpenCourseWare 6.006, *Open Addressing*: https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/a7f609148928e4a10653d3f3be03a2b5_MIT6_006F11_lec10.pdf
-
-Giáo trình Princeton là nguồn chính cho phần Linear Probing và phân tích hệ số tải. Quadratic Probing và các điều kiện của Double Hashing được bổ sung từ những tài liệu thuật toán còn lại.
