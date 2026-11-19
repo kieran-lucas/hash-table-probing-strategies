@@ -87,3 +87,21 @@ test("Dữ liệu phân tán đều: không phát sinh collision ngoài ý muố
     assert.equal(r[method].collisions,0);
   }
 });
+
+test("Default eight-key experiment matches the article and lengthens the animation", () => {
+  const keys=[17,34,51,68,85,102,119,136], size=17;
+  const r=E.compare(keys,size);
+  assert.deepEqual([r.linear.probes,r.quadratic.probes,r.double.probes],[36,36,15]);
+  for(const method of E.METHODS) {
+    assert.equal(r[method].failed,0);
+    assert.equal(r[method].inserted,8);
+  }
+  assert.equal(E.timeline(r).length,38);
+  const {readFileSync}=require("node:fs");
+  const path=require("node:path");
+  const html=readFileSync(path.join(__dirname,"..","index.html"),"utf8");
+  const app=readFileSync(path.join(__dirname,"..","app.js"),"utf8");
+  assert.match(html,/value="17, 34, 51, 68, 85, 102, 119, 136"/);
+  assert.match(html,/<option value="17" selected>/);
+  assert.match(app,/collision: \{size:17,keys:\[17,34,51,68,85,102,119,136\]\}/);
+});
